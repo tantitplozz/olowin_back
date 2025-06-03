@@ -1,27 +1,23 @@
 # Web Framework
-fastapi>=0.115.0
-uvicorn>=0.34.0
+fastapi==0.110.0
+uvicorn==0.29.0
 pydantic>=2.0.0
 starlette>=0.40.0
 jinja2>=3.1.2
 
 # Database
-pymongo>=4.5.0
+pymongo
 motor>=3.3.0
 chromadb>=0.4.18
 
 # AI & Language Models
-metagpt==0.8.2 # Locked for compatibility
-langchain==0.0.231 # Locked for MetaGPT compatibility
-langgraph>=0.0.20
-python-jose[cryptography]>=3.3.0
+metagpt==0.8.2
+loguru==0.6.0
+langchain==0.0.231
 
 # Utilities
-python-dotenv>=1.0.0
-loguru==0.6.0 # Locked for MetaGPT compatibility
-slowapi>=0.1.8
-httpx>=0.24.1
-requests # Added as per user suggestion
+python-dotenv
+requests
 
 # Testing
 pytest>=7.4.0
