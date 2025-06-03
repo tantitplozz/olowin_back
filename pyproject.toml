@@ -1,0 +1,95 @@
+[build-system]
+requires = ["setuptools>=42", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "omnicard-ai"
+version = "0.1.0"
+description = "Multi-Agent Financial Transaction Analysis System"
+readme = "README.md"
+authors = [
+    {name = "OmniCard-AI Contributors"}
+]
+license = {text = "MIT"}
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+requires-python = ">=3.10"
+dependencies = [
+    "fastapi",
+    "uvicorn",
+    "pydantic",
+    "metagpt", # Ensure version compatibility
+    "langchain",
+    "langgraph",
+    "chromadb",
+    "python-dotenv",
+    "loguru",
+    "slowapi",
+    "python-jose[cryptography]",
+    "pytest", # Pytest is a dev dependency, but listed here as per user prompt
+    "httpx",  # httpx is also often a dev dependency for testing
+    # Add other core dependencies from existing requirements.txt if not covered
+    "pymongo>=4.5.0",
+    "motor>=3.3.0",
+    "starlette>=0.40.0",
+    "jinja2>=3.1.2",
+    "playwright>=1.40.0",
+    "ollama",
+    "tenacity",
+    "mongomock", # For testing
+    "ruff", # Linter/formatter, usually a dev dependency
+    "passlib[bcrypt]",
+    "python-multipart",
+    "sentence-transformers", # if ChromaDB uses default EFM
+    "google-generativeai"
+]
+
+[project.optional-dependencies]
+dev = [
+    "black>=23.7.0",
+    "flake8>=6.1.0", # Or just rely on Ruff
+    "mypy>=1.5.1",
+    "pytest>=7.4.0", # Repeated here for clarity as dev dep
+    "pytest-cov",
+    "pytest-asyncio>=0.21.1",
+    # Add other dev-specific tools like pre-commit, coverage, etc.
+]
+
+[project.urls]
+"Homepage" = "https://github.com/yourusername/omnicard-ai" # Replace with actual URL
+"Bug Tracker" = "https://github.com/yourusername/omnicard-ai/issues" # Replace
+
+# This section should ideally list the top-level package(s) of your project.
+# If your project code is inside a directory like 'src/omnicard_ai' or just 'omnicard_ai',
+# that should be listed here. Or use auto-discovery if setuptools supports it well for your layout.
+[tool.setuptools]
+# packages = ["omnicard_ai"] # Example if your main package is omnicard_ai
+# find_packages = {where = ["src"]} # If using a src layout
+# For now, I will keep it as in the user's prompt, but this might need adjustment based on actual structure.
+packages = ["omnicard_ai"] # Corrected from pkgs to packages
+
+[tool.black]
+line-length = 88 # As per user prompt (though Ruff was set to 120 earlier)
+# Ensure consistency or pick one. Let's assume 88 for Black as specified here.
+target-version = ["py310"]
+
+[tool.mypy]
+python_version = "3.10"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+ignore_missing_imports = true # Often useful for third-party libs
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = "test_*.py"
+# addopts = "--cov=. --cov-report=html" # Example for coverage
+
+# Ruff configuration should already be in place from previous steps.
+# If it was intended to be fully replaced by the user's pyproject.toml example,
+# then it would be part of this edit. Assuming the Ruff section is separate and already handled. 

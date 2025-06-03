@@ -1,0 +1,79 @@
+# MetaGPT Configuration with Tools
+
+# LLM Configuration
+llm:
+  api_type: openai
+  model: llama3.1:8b
+  base_url: http://host.docker.internal:11434/v1
+  # api_key: "YOUR_API_KEY"  # Commented out as Ollama doesn't require it for local models
+  # max_tokens: 4096
+  # temperature: 0.0  # Set to 0.0 for deterministic output, if needed
+  # top_p: 1.0
+  # presence_penalty: 0.0
+  # frequency_penalty: 0.0
+  # stream: True # Not fully tested, may cause issues with Promptilus_X expecting full JSON output
+  # timeout: 600 # Increased timeout
+  # request_timeout: 600
+  # retry_codes: [429, 500, 502, 503, 504] # For retrying on server errors
+  # retry_max_count: 5 # Number of retries
+  # log_level: DEBUG
+  # tool_choice: "auto" # Let the model decide when to use tools
+  tool_choice: '{"type": "function", "function": {"name": "PromptilusXTool"}}'
+  # tools: [] # If you have specific tools for the LLM to use, define them here.
+  # organization: "MetaGPT"
+  # rsp_parse_mode: "raw" # Keep as raw if expecting JSON string from Promptilus
+  # system_prompt: "You are a helpful AI assistant."
+  repair_llm_output: true
+
+# Web Search Configuration
+search:
+  api_type: 'ddg'  # DuckDuckGo - free, no API key needed
+  # For Google Search (requires API key):
+  # api_type: 'google'
+  api_key: 'YOUR_GOOGLE_API_KEY_HERE' # Placeholder for Google Custom Search API Key
+  cse_id: 'YOUR_GOOGLE_CSE_ID_HERE' # Placeholder for Google Custom Search Engine ID
+  # params:
+  #   engine: google
+  #   google_domain: 'google.com'
+  #   gl: us
+  #   hl: en
+
+# Web Browser Configuration
+browser:
+  engine: 'playwright'
+  browser_type: 'chromium'  # Options: chromium/firefox/webkit
+  # For Selenium:
+  # engine: 'selenium'
+  # browser_type: 'chrome'  # Options: chrome/firefox/edge
+
+# Mermaid Diagram Configuration
+mermaid:
+  engine: "nodejs"
+  path: "mmdc"
+  puppeteer_config: "/app/metagpt/config/puppeteer-config.json"
+  pyppeteer_path: "/usr/bin/chromium"
+  # Alternative engines:
+  # engine: 'ink'  # Online service
+  # engine: 'playwright'
+  # engine: 'pyppeteer'
+
+# Azure TTS Configuration (Optional)
+# azure_tts_subscription_key: 'YOUR_AZURE_KEY'
+# azure_tts_region: 'eastus'
+
+# Workspace Configuration
+workspace:
+  path: "/app/metagpt/workspace"
+
+# Additional Tool APIs (Optional)
+# For SerpAPI:
+# search:
+#   api_type: 'serpapi'
+#   api_key: 'YOUR_SERPAPI_KEY'
+#   params:
+#     engine: google
+
+# For Serper:
+# search:
+#   api_type: 'serper'
+#   api_key: 'YOUR_SERPER_KEY' 

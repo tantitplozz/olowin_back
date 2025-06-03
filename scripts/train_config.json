@@ -1,0 +1,7 @@
+{
+  "dataset_path": "datasets/omnicard_evaluated_log.jsonl",
+  "base_model": "TheBloke/Nous-Hermes-2-Yi-34B-GGUF",
+  "output_dir": "fine_tuned_model",
+  "epochs": 2,
+  "batch_size": 1
+} 

@@ -1,0 +1,16 @@
+[MASTER]
+init-hook='import sys; import os; sys.path.append(os.getcwd())'
+
+[MESSAGES CONTROL]
+disable=
+    C0111, # missing-docstring
+    C0103, # invalid-name
+    C1801, # len-as-condition
+    W0511, # fixme
+    R0903, # too-few-public-methods
+    R0913, # too-many-arguments
+    R0914, # too-many-locals
+    W0703, # broad-except
+
+[FORMAT]
+max-line-length=120 

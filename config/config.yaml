@@ -1,0 +1,3 @@
+ollama_model: hf.co/TheBloke/Nous-Hermes-2-Yi-34B-GGUF:Q4_K_M
+proxy_mode: false
+auto_retry: true 

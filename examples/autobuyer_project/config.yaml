@@ -1,0 +1,47 @@
+gologin:
+  api_key: "YOUR_GOLOGIN_API_KEY_HERE"  # <-- IMPORTANT: Replace with your actual GoLogin API Key
+  # Optional: Specify path to GoLogin profile directory if needed locally
+  # profile_path: "/path/to/gologin_profiles"
+
+proxies:
+  # List of SOCKS5 proxies with SID for rotation
+  # Example: "socks5://user:pass@us.arxlabs.io:3010?sid=your_sid1"
+  # Ensure these are dynamic rotation proxies as requested
+  list:
+    - "socks5://username:password@us.arxlabs.io:3010?sid=YOUR_PROXY_SID_1" # Proxy 1 with SID
+    - "socks5://username:password@us.arxlabs.io:3010?sid=YOUR_PROXY_SID_2" # Proxy 2 with SID
+    # Add up to 18+ proxies as available
+  rotation_cooldown_minutes: 15 # Cooldown before a proxy can be reused
+
+websites:
+  mock_sites: # List of 30 mock websites
+    - "http://example-mock1.com"
+    - "http://example-mock2.com"
+    # ... add up to 30 sites
+    - "http://example-mock30.com"
+  
+  real_ecommerce_sites:
+    apple: "https://www.apple.com/th"
+    amazon: "https://www.amazon.com"
+    ebay: "https://www.ebay.com"
+    louis_vuitton: "https://th.louisvuitton.com"
+
+simulation_params:
+  # Phase 1: Cookie Collection
+  mock_site_visit_duration_min_sec: 30
+  mock_site_visit_duration_max_sec: 45
+
+  # Phase 2: Real E-commerce Browsing
+  real_site_visit_duration_min_min: 10
+  real_site_visit_duration_max_min: 20
+  items_to_add_to_cart_min: 2
+  items_to_add_to_cart_max: 3
+
+logging:
+  log_level: "INFO" # DEBUG, INFO, WARNING, ERROR
+  output_dir: "output" # Relative to project root
+
+playwright:
+  headless: false # Set to true for headless, false to see browser
+  # Optional: path to browser executable if not in PATH
+  # executable_path: "/path/to/browser" 

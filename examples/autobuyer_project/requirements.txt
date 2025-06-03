@@ -1,0 +1,7 @@
+metagpt>=0.7.0  # Or the latest stable version
+playwright
+requests # For GoLogin API calls
+PyYAML # For loading config.yaml
+typer # For CLI (optional, if we build a CLI interface)
+# Optional, if using a specific version of browser driver
+# playwright install --with-deps chromium # Run this command separately if needed 

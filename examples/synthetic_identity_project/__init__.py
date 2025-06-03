@@ -1,0 +1,1 @@
+# This file makes examples/synthetic_identity_project a Python package 
