@@ -1,44 +1,49 @@
-.PHONY: up down frontend backend monitoring logs clean
+.PHONY: help dev-backend dev-frontend build up down test clean monitoring
 
-# Docker commands
-up:
-	docker-compose -f frontend/docker-compose.yml -f backend/docker-compose.yml up -d
+SHELL := /bin/bash
 
-down:
-	docker-compose -f frontend/docker-compose.yml -f backend/docker-compose.yml down
+help: ## Show this help
+	@egrep -h '\s##\s' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-20s\033[0m %s\n", $$1, $$2}'
 
-# Frontend commands
-frontend-install:
+install-deps-backend: ## Install backend dependencies
+	cd backend && pip install -r requirements/ai.txt -r requirements/db.txt
+
+install-deps-frontend: ## Install frontend dependencies
 	cd frontend && npm install
 
-frontend-dev:
+dev-backend: ## Run backend in development mode
+	cd backend && uvicorn src.main:app --reload --host 0.0.0.0 --port 8001
+
+dev-frontend: ## Run frontend in development mode
 	cd frontend && npm run dev
 
-frontend-build:
-	cd frontend && npm run build
+build: ## Build Docker images
+	docker-compose build
 
-frontend: frontend-install frontend-dev
+up: ## Start all services
+	docker-compose up -d
 
-# Backend commands
-backend-install:
-	cd backend && pip install -r requirements/base.txt
+down: ## Stop all services
+	docker-compose down
 
-backend-dev:
-	cd backend && uvicorn src.main:app --reload --port 8001
+restart: down up ## Restart all services
 
-backend: backend-install backend-dev
+logs: ## Show logs
+	docker-compose logs -f
 
-# Monitoring commands
-monitoring:
-	docker-compose -f monitoring/docker-compose.yml up -d
+monitoring-up: ## Start monitoring stack
+	cd monitoring && docker-compose up -d
 
-# Utility commands
-logs:
-	docker-compose -f frontend/docker-compose.yml -f backend/docker-compose.yml logs -f
+monitoring-down: ## Stop monitoring stack
+	cd monitoring && docker-compose down
 
-clean:
-	docker-compose -f frontend/docker-compose.yml -f backend/docker-compose.yml down -v
-	rm -rf frontend/node_modules frontend/dist
-	find . -type d -name "__pycache__" -exec rm -r {} +
-	find . -type d -name "*.egg-info" -exec rm -r {} +
-	find . -type f -name "*.pyc" -delete 
+test: ## Run tests
+	cd backend && pytest
+
+clean: ## Clean up
+	find . -type d -name __pycache__ -exec rm -rf {} +
+	find . -type d -name .pytest_cache -exec rm -rf {} +
+	find . -type d -name node_modules -exec rm -rf {} +
+	find . -type d -name dist -exec rm -rf {} +
+
+setup-dev: install-deps-backend install-deps-frontend ## Setup development environment 

@@ -19,34 +19,70 @@ wheels/
 *.egg-info/
 .installed.cfg
 *.egg
-.pytest_cache/
-.coverage
-htmlcov/
-.mypy_cache/
-.ruff_cache/
+MANIFEST
+venv/
+env/
+ENV/
+.env
 
 # Node.js
 node_modules/
-dist/
-.env
-.env.local
-.env.*.local
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-.pnpm-debug.log*
+npm-debug.log
+yarn-debug.log
+yarn-error.log
+package-lock.json
+yarn.lock
+.npm/
+.npmrc
 
-# IDE
+# Testing
+.coverage
+htmlcov/
+.pytest_cache/
+nosetests.xml
+coverage.xml
+*.cover
+.hypothesis/
+.tox/
+
+# IDEs and editors
 .idea/
 .vscode/
 *.swp
 *.swo
 .DS_Store
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Database files
+*.sqlite3
+*.db
+data/mongodb/
+data/redis/
+data/chroma/
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Build artifacts
+frontend/dist/
+frontend/build/
+frontend/.next/
+
+# Temporary files
+tmp/
+temp/
+.mypy_cache/
+.ruff_cache/
 
 # Docker
 .docker/
-data/
-logs/
 
 # Project specific
 workspace/
@@ -60,12 +96,6 @@ grafana_data/
 elasticsearch_data/
 backup/
 *.tar.gz
-
-# Environments
-env/
-venv/
-.venv/
-ENV/
 
 # Distribution / packaging
 *.tar.gz
