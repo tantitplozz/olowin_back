@@ -1,21 +1,45 @@
+"""Example of custom LLM configurations for different roles in a debate scenario."""
 import asyncio
+from typing import Optional, List, Any, Tuple
 
-# from metagpt.config2 import Config
-# from metagpt.roles import Role
-# from metagpt.actions import Action
-# from metagpt.environment import Environment
-# from metagpt.team import Team
-# from metagpt.schema import Message
-# from metagpt.logs import logger
+try:
+    from metagpt.config import Config  # Changed from config2 to config
+    from metagpt.roles.base_role import Role  # More specific import
+    from metagpt.actions.action import Action
+    from metagpt.environment import Environment
+    from metagpt.team import Team
+    from metagpt.schema import Message
+    from metagpt.logs import logger
+except ImportError as e:
+    print(f"Error importing MetaGPT components: {e}")
+    print("Please ensure MetaGPT is installed correctly")
+    raise
 
 # Example: US Election Debate with Different LLM Configurations
 
 # Method 1: Create configurations programmatically
-# def create_custom_configs():
-#     ...
+def create_custom_configs() -> Tuple[Config, Config, Config]:
+    """Create different configurations for GPT-4, GPT-3.5, and Ollama."""
+    # GPT-4 config
+    gpt4_config = Config.default()
+    gpt4_config.llm.model = "gpt-4"
+    gpt4_config.llm.api_key = "$OPENAI_API_KEY"
+
+    # GPT-3.5 config
+    gpt35_config = Config.default()
+    gpt35_config.llm.model = "gpt-3.5-turbo"
+    gpt35_config.llm.api_key = "$OPENAI_API_KEY"
+
+    # Ollama config
+    ollama_config = Config.default()
+    ollama_config.llm.api_type = "ollama"
+    ollama_config.llm.base_url = "http://localhost:11434"
+    ollama_config.llm.model = "llama2"
+
+    return gpt4_config, gpt35_config, ollama_config
 
 
-def create_openrouter_config(model_name="anthropic/claude-3-haiku"):
+def create_openrouter_config(model_name: str = "anthropic/claude-3-haiku") -> Config:
     """Create a configuration for OpenRouter"""
     openrouter_cfg = Config.default()
     openrouter_cfg.llm.api_type = "open_router"
@@ -26,7 +50,8 @@ def create_openrouter_config(model_name="anthropic/claude-3-haiku"):
 
 
 # Placeholder for openrouter_models_showcase if it was intended to be different
-async def openrouter_models_showcase():
+async def openrouter_models_showcase() -> None:
+    """Showcase different OpenRouter models"""
     print("\n=== OpenRouter Models Showcase (Placeholder) ===")
     logger.info("This demo would iterate through various free models on OpenRouter.")
     logger.info(
@@ -34,13 +59,11 @@ async def openrouter_models_showcase():
     )
     # For a full demo, one would loop through a list of model names,
     # create a config for each, and run a sample task.
-    pass
 
 
 # Define custom actions with different configurations
 class DebateAction(Action):
     """Action for candidates to debate"""
-
     name: str = "Debate"
 
     async def run(self, topic: str, opponent_view: str = "") -> str:
@@ -52,15 +75,15 @@ class DebateAction(Action):
         Present your position on this topic in under 80 words. 
         Be passionate and convincing, but respectful.
         """
-        return await self._aask(prompt)
+        result: str = await self._aask(prompt)
+        return result
 
 
 class VoteAction(Action):
     """Action for voter to make decision"""
-
     name: str = "Vote"
 
-    async def run(self, candidate_views: list) -> str:
+    async def run(self, candidate_views: List[str]) -> str:
         prompt = f"""
         Based on the following candidate positions:
         
@@ -68,14 +91,14 @@ class VoteAction(Action):
         
         As a voter, decide which candidate you support and explain why in under 50 words.
         """
-        return await self._aask(prompt)
+        result: str = await self._aask(prompt)
+        return result
 
 
 # Define roles with different LLM configurations
 class Candidate(Role):
     """Political candidate role"""
-
-    def __init__(self, name: str, party: str, config=None, **kwargs):
+    def __init__(self, name: str, party: str, config: Optional[Config] = None, **kwargs: Any) -> None:
         super().__init__(**kwargs)
         self.name = name
         self.profile = f"{party} candidate"
@@ -91,7 +114,7 @@ class Candidate(Role):
         # Watch for other candidates
         self._watch([DebateAction])
 
-    async def _act(self) -> Message:
+    async def _act(self) -> Optional[Message]:
         """Custom acting logic to respond to debates"""
         logger.info(f"{self.name}: Preparing to debate")
 
@@ -110,16 +133,12 @@ class Candidate(Role):
 
         # Debate on the topic
         response = await self.rc.todo.run(topic=topic, opponent_view=opponent_view)
-
-        msg = Message(content=response, role=self.profile, cause_by=type(self.rc.todo))
-
-        return msg
+        return Message(content=response, role=self.profile, cause_by=type(self.rc.todo))
 
 
 class Voter(Role):
     """Voter role that evaluates candidates"""
-
-    def __init__(self, name: str = "Voter", **kwargs):
+    def __init__(self, name: str = "Voter", **kwargs: Any) -> None:
         super().__init__(**kwargs)
         self.name = name
         self.profile = "Independent Voter"
@@ -127,13 +146,13 @@ class Voter(Role):
         self.set_actions([VoteAction()])
         self._watch([DebateAction])
 
-    async def _act(self) -> Message:
+    async def _act(self) -> Optional[Message]:
         """Collect all candidate views and vote"""
         logger.info(f"{self.name}: Evaluating candidates")
 
         # Get all debate messages
         memories = self.get_memories()
-        candidate_views = []
+        candidate_views: List[str] = []
 
         for memory in memories:
             if memory.cause_by == DebateAction:
@@ -142,16 +161,54 @@ class Voter(Role):
         # Vote based on all views
         if len(candidate_views) >= 2:
             decision = await self.rc.todo.run(candidate_views=candidate_views)
-            msg = Message(
-                content=decision, role=self.profile, cause_by=type(self.rc.todo)
-            )
-            return msg
+            return Message(content=decision, role=self.profile, cause_by=type(self.rc.todo))
 
         return None
 
 
+class SmartCandidate(Role):
+    """A candidate that can use different models for different responses"""
+    def __init__(self, name: str, **kwargs: Any) -> None:
+        super().__init__(**kwargs)
+        self.name = name
+        self.profile = "Smart Candidate"
+        
+        # Get configs for different quality responses
+        gpt4_config, _, ollama_config = create_custom_configs()
+        
+        # Create actions with specific configs
+        debate_gpt4 = DebateAction(config=gpt4_config)
+        debate_ollama = DebateAction(config=ollama_config)
+        
+        self.set_actions([debate_gpt4, debate_ollama])
+        self._current_action_index = 0
+
+    async def _think(self) -> Action:
+        """Alternate between high-quality and quick responses"""
+        self._set_state(self._current_action_index)
+        self._current_action_index = (self._current_action_index + 1) % 2
+        return self._actions[self._rc.state]
+
+
+class OpenRouterCandidate(Role):
+    """A candidate that uses OpenRouter for all responses"""
+    def __init__(self, name: str, **kwargs: Any) -> None:
+        super().__init__(**kwargs)
+        self.name = name
+        self.profile = "OpenRouter Candidate"
+        
+        # Create OpenRouter configuration
+        config = create_openrouter_config()
+        self.set_actions([DebateAction(config=config)])
+
+    async def _think(self) -> Action:
+        """Use OpenRouter for thinking"""
+        logger.info(f"{self.name}: Using OpenRouter for thinking")
+        return self._actions[0]  # Return the DebateAction instance
+
+
 # Demo functions
-async def simple_debate_demo():
+async def simple_debate_demo() -> None:
     """Simple debate with different LLM configs"""
     print("\n=== Simple Debate Demo ===")
 
@@ -178,36 +235,12 @@ async def simple_debate_demo():
     await team.run(idea="Topic: Climate Change Policy", send_to="Alice", n_round=3)
 
 
-async def action_level_config_demo():
+async def action_level_config_demo() -> None:
     """Demo showing action-level configuration override"""
     print("\n=== Action-Level Config Demo ===")
 
-    # Get configs
-    gpt4_config, gpt35_config, ollama_config = create_custom_configs()
-
-    # Create actions with specific configs
-    high_quality_debate = DebateAction(config=gpt4_config)  # GPT-4 for important debate
-    quick_response = DebateAction(
-        config=ollama_config
-    )  # Local model for quick response
-
-    # Create a candidate that uses different models for different situations
-    class SmartCandidate(Role):
-        def __init__(self, name: str, **kwargs):
-            super().__init__(**kwargs)
-            self.name = name
-            self.profile = "Smart Candidate"
-            self.set_actions([high_quality_debate, quick_response])
-            self._current_action_index = 0
-
-        async def _think(self):
-            """Alternate between high-quality and quick responses"""
-            self._set_state(self._current_action_index)
-            self._current_action_index = (self._current_action_index + 1) % 2
-            return self._actions[self._rc.state]
-
-    # Demo the smart candidate
-    candidate = SmartCandidate(name="Diana", config=gpt35_config)
+    # Create smart candidate
+    candidate = SmartCandidate(name="Diana")
 
     # First response uses GPT-4 (high quality)
     logger.info("First response (using GPT-4):")
@@ -220,15 +253,17 @@ async def action_level_config_demo():
     logger.info(response2)
 
 
-async def priority_demo():
+async def priority_demo() -> None:
     """Demo showing configuration priority"""
     print("\n=== Configuration Priority Demo ===")
 
     # Get configs
-    gpt4_config, gpt35_config, ollama_config = create_custom_configs()
+    gpt4_config, gpt35_config, _ = create_custom_configs()
 
     # Global config (from Config.default())
-    logger.info(f"Global config model: {Config.default().llm.model}")
+    default_config = Config.default()
+    if default_config and default_config.llm:
+        logger.info(f"Global config model: {default_config.llm.model}")
 
     # Create action with its own config
     action_with_config = DebateAction(config=gpt4_config)
@@ -240,32 +275,18 @@ async def priority_demo():
     role_with_config.set_actions([action_with_config])
 
     # The action will use its own config (GPT-4) instead of role config (GPT-3.5)
-    logger.info(f"Role config model: {role_with_config.config.llm.model}")
-    logger.info(f"Action config model: {action_with_config.config.llm.model}")
+    if role_with_config.config and role_with_config.config.llm:
+        logger.info(f"Role config model: {role_with_config.config.llm.model}")
+    if action_with_config.config and action_with_config.config.llm:
+        logger.info(f"Action config model: {action_with_config.config.llm.model}")
     logger.info("Action will use: GPT-4 (action config has priority)")
 
 
-async def openrouter_demo():
+async def openrouter_demo() -> None:
     """Demo showing OpenRouter configuration"""
     print("\n=== OpenRouter Demo ===")
 
-    # Create OpenRouter configuration
-    openrouter_config = create_openrouter_config()
-
     # Create a candidate that uses OpenRouter
-    class OpenRouterCandidate(Role):
-        def __init__(self, name: str, **kwargs):
-            super().__init__(**kwargs)
-            self.name = name
-            self.profile = "OpenRouter Candidate"
-            self.set_actions([DebateAction(config=openrouter_config)])
-
-        async def _think(self):
-            """Use OpenRouter for thinking"""
-            logger.info(f"{self.name}: Using OpenRouter for thinking")
-            return await self.rc.todo.run(topic="", opponent_view="")
-
-    # Demo the OpenRouter candidate
     candidate = OpenRouterCandidate(name="Frank")
 
     # First response uses OpenRouter
@@ -279,7 +300,7 @@ async def openrouter_demo():
     logger.info(response2)
 
 
-async def main():
+async def main() -> None:
     """Run all demos"""
     print("MetaGPT Custom LLM Configuration Demo")
     print("=====================================")

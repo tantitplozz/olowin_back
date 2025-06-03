@@ -1,59 +1,75 @@
 version: "3.9"
 
 services:
-  # 🔹 Backend: FastAPI + Agent + JWT + WebSocket
-  omnicard-backend:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    command: uvicorn ui_server:app --host 0.0.0.0 --port 8000
-    ports:
-      - "8000:8000"
-    environment:
-      OMNICARD_JWT_SECRET_KEY: ${OMNICARD_JWT_SECRET_KEY}
-      GEMINI_API_URL: ${GEMINI_API_URL}
-      GEMINI_API_KEY: ${GEMINI_API_KEY}
-      OLLAMA_BASE_URL: ${OLLAMA_BASE_URL}
-      MONGODB_URI: ${MONGODB_URI}
-      AGENT_MODE: ${AGENT_MODE:-production}
-      PYTHONUNBUFFERED: "1"
-    volumes:
-      - ./datasets:/app/datasets
-    depends_on:
-      - mongo
-    restart: always
+  #====================================
+  # 🖥️ Frontend
+  #====================================
+  web-ui:
+    extends:
+      file: ./frontend/docker-compose.yml
+      service: web-ui
 
-  # 🔹 MongoDB: สำหรับ Logging
-  mongo:
-    image: mongo:5
-    restart: always
-    ports:
-      - "27017:27017"
-    volumes:
-      - mongo_data:/data/db
+  #====================================
+  # 🚀 Backend
+  #====================================
+  api-server:
+    extends:
+      file: ./backend/docker-compose.yml
+      service: api-server
 
-  # 🔹 Frontend: Static HTML + WebSocket client
-  omnicard-frontend:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile
+  llm-ollama:
+    extends:
+      file: ./backend/docker-compose.yml
+      service: llm-ollama
+
+  mongodb:
+    extends:
+      file: ./backend/docker-compose.yml
+      service: mongodb
+
+  redis:
+    extends:
+      file: ./backend/docker-compose.yml
+      service: redis
+
+  rabbitmq:
+    extends:
+      file: ./backend/docker-compose.yml
+      service: rabbitmq
+
+  #====================================
+  # 📊 Monitoring
+  #====================================
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: omnicard-prometheus
+    volumes:
+      - ./docker/config/prometheus:/etc/prometheus
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
     ports:
-      - "8080:80"
+      - "9090:9090"
+    profiles: ['monitoring']
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: omnicard-grafana
+    volumes:
+      - grafana_data:/var/lib/grafana
     environment:
-      BACKEND_URL: ${BACKEND_URL:-http://omnicard-backend:8000}
-      WS_URL: ${WS_URL:-ws://omnicard-backend:8000/ws/logs}
-    restart: always
+      - GF_SECURITY_ADMIN_PASSWORD=${GRAFANA_PASSWORD:-admin}
+    ports:
+      - "3000:3000"
     depends_on:
-      - omnicard-backend
+      - prometheus
+    profiles: ['monitoring']
 
 volumes:
-  mongo_data:
-    driver: local
-# 📄 ใช้งานร่วมกับ .env.production หรือ Railway Variables
-# - OMNICARD_JWT_SECRET_KEY
-# - GEMINI_API_URL / GEMINI_API_KEY
-# - OLLAMA_BASE_URL
-# - MONGODB_URI
-# - BACKEND_URL (frontend only, for JS or Nginx config)
-# - WS_URL (frontend only, for JS)
-# - AGENT_MODE (e.g., production, development)
+  prometheus_data:
+  grafana_data:
+
+networks:
+  omnicard-network:
+    name: omnicard-network

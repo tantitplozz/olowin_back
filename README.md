@@ -1,99 +1,90 @@
-# OmniCard-AI: Multi-Agent Financial Transaction Analysis System
+# OmniCard AI
 
-OmniCard-AI is a sophisticated multi-agent system designed for real-time financial transaction analysis, risk assessment, and intelligent decision-making.
+ระบบ AI Agent สำหรับการวิเคราะห์และประมวลผลข้อมูล โดยใช้ Multi-Agent Architecture
 
-## Features
+## 🚀 Features
 
-- **Multi-Agent Workflow**: Specialized agents for various tasks working together
-- **Dynamic LLM Routing**: Intelligent routing of prompts to appropriate LLMs
-- **Vectorized Memory**: Persistent memory using ChromaDB
-- **Real-time Monitoring**: Logging and monitoring via FastAPI and WebSocket
-- **Containerized Services**: Easy deployment with Docker
-- **Interactive Interface**: CLI and API endpoints for interaction
-- **AutoBuyer Agent**: MetaGPT-powered agent for simulating human browsing behavior
+- Multi-Agent System ที่แต่ละ Agent มีบทบาทเฉพาะ
+- ใช้ Local LLM (Ollama) และ Gemini API
+- Real-time WebSocket สำหรับการแสดงผล
+- ระบบ Logging และ Monitoring แบบครบวงจร
+- Docker-based deployment พร้อม auto-scaling
 
-## Getting Started
+## 🛠️ Tech Stack
 
-### Prerequisites
+- **Frontend**: React + TypeScript + Vite
+- **Backend**: FastAPI + Python
+- **LLM**: Ollama (Local) + Gemini API
+- **Database**: MongoDB + Redis + ChromaDB
+- **Message Queue**: RabbitMQ
+- **Monitoring**: Prometheus + Grafana
+- **Logging**: ELK Stack
 
-- Docker & Docker Compose
-- Python 3.10+
-- Node.js & npm (if using the frontend part)
-- API Keys (e.g., Google Gemini, OpenAI, GoLogin as per `.env.example`)
+## 📦 Requirements
 
-### Installation
+- Docker และ Docker Compose
+- Node.js 18+
+- Python 3.11+
+- 16GB RAM ขึ้นไป (สำหรับ Local LLM)
 
-1.  **Clone the repository:**
-    ```bash
-    git clone https://github.com/yourusername/omnicard-ai.git # Replace with your actual repo URL
-    cd omnicard-ai
-    ```
+## 🚀 Quick Start
 
-2.  **Set up environment variables:**
-    Create a `.env` file from the example and populate it with your actual API keys and configurations.
-    ```bash
-    cp .env.example .env
-    # Edit .env with your API keys and configuration
-    ```
+1. Clone repository:
+```bash
+git clone https://github.com/yourusername/omnicard.git
+cd omnicard
+```
 
-3.  **Create necessary data directories (if not handled by Docker volumes initially):**
-    ```bash
-    mkdir -p data/chromadb
-    ```
+2. สร้างไฟล์ .env:
+```bash
+cp .env.example .env
+# แก้ไขค่าต่างๆ ใน .env ตามต้องการ
+```
 
-4.  **Install Python dependencies (preferably in a virtual environment):**
-    ```bash
-    python -m venv venv
-    source venv/bin/activate  # On Windows: venv\Scripts\activate
-    pip install -r requirements.txt
-    ```
+3. รันระบบ:
+```bash
+# รันทั้งระบบ
+make up
 
-5.  **Build and start Docker services (for containerized deployment):**
-    ```bash
-    docker-compose up --build -d
-    ```
-    This will build the images and start the `api`, `mongodb`, and `frontend` (if configured) services.
+# รันเฉพาะ Frontend
+make frontend
 
-6.  **Set up the frontend (if applicable and not fully handled by Docker):**
-    If you have a separate frontend setup (e.g., in the `frontend/` directory):
-    ```bash
-    cd frontend
-    npm install
-    npm run dev # Or your frontend start command
-    ```
+# รันเฉพาะ Backend
+make backend
 
-### Usage
+# รันพร้อม Monitoring
+make monitoring
+```
 
-The application can be run in different modes using `main.py`:
+4. เข้าถึงระบบ:
+- Web UI: http://localhost:8080
+- API Docs: http://localhost:8001/docs
+- Monitoring:
+  * Grafana: http://localhost:3000
+  * Prometheus: http://localhost:9090
+- Development Tools:
+  * MongoDB Express: http://localhost:8081
+  * Redis Commander: http://localhost:8082
+  * RabbitMQ Management: http://localhost:15672
 
-*   **API Mode (Default with Docker):**
-    The FastAPI server will be accessible (default: `http://localhost:8000`).
-    If running locally without Docker:
-    ```bash
-    python main.py --mode api
-    ```
+## 📚 Documentation
 
-*   **CLI Mode:**
-    Execute tasks directly via the command line.
-    ```bash
-    python main.py --mode cli --task "Your task description here"
-    ```
+- [API Documentation](docs/api.md)
+- [Architecture Overview](docs/architecture.md)
+- [Development Guide](docs/development.md)
+- [Deployment Guide](docs/deployment.md)
 
-*   **MetaGPT Mode (for specific scripts like `run_metagpt_with_promptilus.py`):**
-    ```bash
-    python main.py --mode metagpt --task "Your task for MetaGPT script"
-    ```
+## 🤝 Contributing
 
-#### Web Interface
+1. Fork repository
+2. สร้าง feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit changes (`git commit -m 'Add amazing feature'`)
+4. Push to branch (`git push origin feature/amazing-feature`)
+5. สร้าง Pull Request
 
-If the frontend service is running (default: `http://localhost:5173`), you can access the web UI there.
+## 📝 License
 
-#### API Endpoints
-
-(Assuming standard FastAPI setup from `api/server.py`)
--   `GET /`: Main HTML page (if `index.html` is served)
--   `POST /submit_task`: Submit a task to the system. Body: `{"task": "your task description"}`
--   Other endpoints as defined in `api/server.py`.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ## AutoBuyer Agent
 
@@ -165,14 +156,6 @@ omnicard-ai/ (or MEEMEE/)
 ```
 
 This structure is a general guideline and might vary based on the actual project layout.
-
-## License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
-## Code of Conduct
-
-Please read our [Code of Conduct](CODE_OF_CONDUCT.md) before contributing to the project.
 
 ## ENV Configs (for .env file)
 

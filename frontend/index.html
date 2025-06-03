@@ -4,61 +4,9 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>OmniCard Frontend</title>
-  <link rel="stylesheet" href="./static/style.css" />
 </head>
 <body>
-  <div class="container">
-    <h1>🧠 OmniCard-AI Agent Interface</h1>
-
-    <form id="prompt-form">
-      <label for="prompt">Enter Prompt:</label>
-      <textarea id="prompt" placeholder="Enter your prompt..."></textarea>
-      <label for="authToken">JWT Token:</label>
-      <input type="text" id="authToken" placeholder="Enter JWT token here" />
-      <button type="submit">Run Prompt</button>
-    </form>
-
-    <h2>�� Response:</h2>
-    <pre id="response"></pre>
-
-    <h2>📡 Chain-of-Thought Log:</h2>
-    <label for="chain-log">Log Output:</label>
-    <textarea id="chain-log" readonly></textarea>
-  </div>
-
-  <script>
-    const form = document.getElementById("prompt-form");
-    const promptInput = document.getElementById("prompt");
-    const responseBox = document.getElementById("response");
-    const tokenInput = document.getElementById("authToken");
-    const logBox = document.getElementById("chain-log");
-
-    const BACKEND_URL = window.BACKEND_URL || 'https://noowin-backend.up.railway.app';
-    const WS_URL = window.WS_URL || 'wss://noowin-backend.up.railway.app/ws/logs';
-
-    form.addEventListener("submit", async (e) => {
-      e.preventDefault();
-
-      const prompt = promptInput.value.trim();
-      const token = tokenInput.value.trim();
-
-      const res = await fetch(`${BACKEND_URL}/run_graph`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`,
-        },
-        body: JSON.stringify({ prompt }),
-      });
-
-      const result = await res.json();
-      responseBox.textContent = JSON.stringify(result, null, 2);
-    });
-
-    const ws = new WebSocket(WS_URL);
-    ws.onmessage = (event) => {
-      logBox.value += event.data + "\n";
-    };
-  </script>
+  <div id="root"></div>
+  <script type="module" src="/src/main.tsx"></script>
 </body>
 </html> 

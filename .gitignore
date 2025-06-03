@@ -4,14 +4,6 @@ __pycache__/
 *$py.class
 *.so
 .Python
-
-# Environments
-env/
-venv/
-.venv/
-ENV/
-
-# Build artifacts
 build/
 develop-eggs/
 dist/
@@ -27,6 +19,53 @@ wheels/
 *.egg-info/
 .installed.cfg
 *.egg
+.pytest_cache/
+.coverage
+htmlcov/
+.mypy_cache/
+.ruff_cache/
+
+# Node.js
+node_modules/
+dist/
+.env
+.env.local
+.env.*.local
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+
+# Docker
+.docker/
+data/
+logs/
+
+# Project specific
+workspace/
+datasets/
+ollama_models/
+mongodb_data/
+redis_data/
+rabbitmq_data/
+prometheus_data/
+grafana_data/
+elasticsearch_data/
+backup/
+*.tar.gz
+
+# Environments
+env/
+venv/
+.venv/
+ENV/
 
 # Distribution / packaging
 *.tar.gz
@@ -45,10 +84,8 @@ pip-log.txt
 pip-delete-this-directory.txt
 
 # Unit test / coverage reports
-htmlcov/
 .tox/
 .nox/
-.coverage
 .coverage.*
 .cache
 nosetests.xml
@@ -69,7 +106,6 @@ celerybeat.pid
 .ipynb_checkpoints
 
 # Logs
-logs/
 *.log
 npm-debug.log*
 yarn-debug.log*
@@ -101,7 +137,6 @@ bower_components/
 build/Release
 
 # Dependency directories
-node_modules/
 jspm_packages/
 
 # Snowpack dependency directory (https://snowpack.dev/)
