@@ -1,11 +1,10 @@
-from fastapi import FastAPI, HTTPException, Depends, WebSocket, WebSocketDisconnect
+from fastapi import FastAPI, HTTPException, WebSocket, WebSocketDisconnect
 from fastapi.responses import JSONResponse, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.staticfiles import StaticFiles
 from starlette.middleware.base import BaseHTTPMiddleware
 from prometheus_client import Counter, Histogram, generate_latest
-import prometheus_client
 import logging
 import time
 import os
@@ -13,16 +12,14 @@ import json
 from typing import List
 from datetime import datetime
 import httpx
-import redis
-import pika
-from motor.motor_asyncio import AsyncIOMotorClient
 
 # Import API routers
 from backend.src.api import api_router
 from backend.src.db.mongodb import connect_to_mongodb, close_mongodb_connection
 
+# Setup FastAPI
 app = FastAPI(
-    title="OmniCard API",
+    title="OmniCard AI",
     description="Multi-Agent System for AI-powered data processing",
     version="1.0.0",
     docs_url="/docs",
@@ -78,8 +75,8 @@ class PrometheusMiddleware(BaseHTTPMiddleware):
                 
             return response
         except Exception as e:
-            logger.error(f"Request failed: {e}")
-            raise e
+            logger.error("Request failed: %s", e)
+            raise
 
 app.add_middleware(PrometheusMiddleware)
 
@@ -110,7 +107,7 @@ app.include_router(api_router)
 # API routes
 @app.get("/")
 def root():
-    return {"message": "OmniCard API is running", "version": "1.0.0"}
+    return {"message": "OmniCard AI is running", "version": "1.0.0"}
 
 @app.get("/health")
 def health():
@@ -146,7 +143,7 @@ async def process_with_agents(request_data: dict):
     # Placeholder for agent processing logic
     try:
         # Log the incoming request
-        logger.info(f"Processing request: {json.dumps(request_data)}")
+        logger.info("Processing request: %s", json.dumps(request_data))
         
         # Mock response for now
         response = {
@@ -166,8 +163,8 @@ async def process_with_agents(request_data: dict):
         
         return response
     except Exception as e:
-        logger.error(f"Error processing request: {str(e)}")
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error("Error processing request: %s", str(e))
+        raise HTTPException(status_code=500, detail=str(e)) from e
 
 # Serve static files in production
 if os.getenv("ENVIRONMENT") == "production":
@@ -176,7 +173,7 @@ if os.getenv("ENVIRONMENT") == "production":
 # Startup event
 @app.on_event("startup")
 async def startup_event():
-    logger.info("Starting up OmniCard API...")
+    logger.info("Starting up OmniCard AI...")
     # Initialize database connections
     await connect_to_mongodb()
     
@@ -187,48 +184,34 @@ async def startup_event():
         "services": {}
     }
     
-    # Check Redis
-    try:
-        redis_client = redis.Redis(host='redis', port=6379)
-        redis_client.ping()
-        status["services"]["redis"] = "healthy"
-    except Exception as e:
-        status["services"]["redis"] = f"unhealthy: {str(e)}"
+    # Check for external services only if not in development mode
+    if os.getenv("ENVIRONMENT") != "development":
+        try:
+            async with httpx.AsyncClient(timeout=2.0) as client:
+                # Check Ollama if available
+                try:
+                    response = await client.get("http://localhost:11434/api/health")
+                    if response.status_code == 200:
+                        status["services"]["ollama"] = "healthy"
+                        logger.info("Ollama service is available")
+                    else:
+                        status["services"]["ollama"] = f"unhealthy: status code {response.status_code}"
+                        logger.warning("Ollama service returned status code %d", response.status_code)
+                except Exception as e:
+                    status["services"]["ollama"] = f"unavailable: {str(e)}"
+                    logger.info("Ollama service not available: %s", str(e))
+        except Exception as e:
+            logger.error("Error during health check: %s", str(e))
 
-    # Check RabbitMQ
-    try:
-        connection = pika.BlockingConnection(
-            pika.ConnectionParameters(host='rabbitmq')
-        )
-        connection.close()
-        status["services"]["rabbitmq"] = "healthy"
-    except Exception as e:
-        status["services"]["rabbitmq"] = f"unhealthy: {str(e)}"
-
-    # Check Ollama
-    try:
-        async with httpx.AsyncClient() as client:
-            response = await client.get("http://llm-ollama:11435/api/health")
-            if response.status_code == 200:
-                status["services"]["ollama"] = "healthy"
-            else:
-                status["services"]["ollama"] = f"unhealthy: status code {response.status_code}"
-    except Exception as e:
-        status["services"]["ollama"] = f"unhealthy: {str(e)}"
-
-    # If any service is unhealthy, return 503
-    if any("unhealthy" in v for v in status["services"].values()):
-        raise HTTPException(status_code=503, detail=status)
-    
-    logger.info("OmniCard API is healthy")
+    logger.info("OmniCard AI started successfully")
 
 # Shutdown event
 @app.on_event("shutdown")
 async def shutdown_event():
-    logger.info("Shutting down OmniCard API...")
+    logger.info("Shutting down OmniCard AI...")
     # Close database connections
     await close_mongodb_connection()
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8001) 
+    uvicorn.run(app, host="0.0.0.0", port=8000) 

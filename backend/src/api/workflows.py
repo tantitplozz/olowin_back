@@ -5,7 +5,7 @@ from fastapi import APIRouter, Depends, HTTPException, status, Query, Path, Body
 
 # Models
 from backend.src.models.workflow import (
-    Workflow, WorkflowCreate, WorkflowUpdate, WorkflowInDB, 
+    Workflow, WorkflowCreate, WorkflowUpdate, 
     WorkflowStatus, WorkflowExecutionStatus, WorkflowExecution
 )
 from backend.src.api.auth import get_current_active_user
@@ -28,7 +28,7 @@ async def get_db():
 # API Routes
 @router.get("/", response_model=List[Workflow])
 async def list_workflows(
-    status: Optional[WorkflowStatus] = None,
+    workflow_status: Optional[WorkflowStatus] = None,
     tag: Optional[str] = None,
     skip: int = Query(0, ge=0),
     limit: int = Query(100, ge=1, le=1000),
@@ -103,8 +103,8 @@ async def list_workflows(
     ]
     
     # Apply filters (if provided)
-    if status:
-        workflows = [w for w in workflows if w["status"] == status]
+    if workflow_status:
+        workflows = [w for w in workflows if w["status"] == workflow_status]
     if tag:
         workflows = [w for w in workflows if tag in w["tags"]]
     

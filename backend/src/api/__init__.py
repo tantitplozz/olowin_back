@@ -1,8 +1,9 @@
 from fastapi import APIRouter
 
-from .auth import router as auth_router
-from .agents import router as agents_router
-from .workflows import router as workflows_router
+# Import routers directly
+from backend.src.api.auth import router as auth_router
+from backend.src.api.agents import router as agents_router
+from backend.src.api.workflows import router as workflows_router
 
 # Create a main router that includes all sub-routers
 api_router = APIRouter(prefix="/api")

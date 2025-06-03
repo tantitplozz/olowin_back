@@ -1,0 +1,4 @@
+-r backend/requirements/base.txt
+-r backend/requirements/ai.txt
+-r backend/requirements/db.txt
+-r backend/requirements/dev.txt 

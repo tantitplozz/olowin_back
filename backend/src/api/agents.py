@@ -26,8 +26,8 @@ async def get_db():
 # API Routes
 @router.get("/", response_model=List[Agent])
 async def list_agents(
-    status: Optional[AgentStatus] = None,
-    type: Optional[AgentType] = None,
+    agent_status: Optional[AgentStatus] = None,
+    agent_type: Optional[AgentType] = None,
     is_active: Optional[bool] = None,
     skip: int = Query(0, ge=0),
     limit: int = Query(100, ge=1, le=1000),
@@ -83,10 +83,10 @@ async def list_agents(
     ]
     
     # Apply filters (if provided)
-    if status:
-        agents = [a for a in agents if a.status == status]
-    if type:
-        agents = [a for a in agents if a.type == type]
+    if agent_status:
+        agents = [a for a in agents if a.status == agent_status]
+    if agent_type:
+        agents = [a for a in agents if a.type == agent_type]
     if is_active is not None:
         agents = [a for a in agents if a.is_active == is_active]
     
