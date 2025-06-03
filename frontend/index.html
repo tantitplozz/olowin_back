@@ -1,0 +1,145 @@
+<!-- Assuming this is a basic HTML structure -->
+<html>
+<head>
+    <title>OmniCard AI Frontend</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body { font-family: sans-serif; margin: 20px; background-color: #f4f4f4; color: #333; }
+        h1 { color: #5a5a5a; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; }
+        #prompt-container { margin-bottom: 20px; }
+        #prompt-input { width: 70%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; margin-bottom: 5px; }
+        #submit-prompt { padding: 10px 15px; background-color: #5cb85c; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        #submit-prompt:hover { background-color: #4cae4c; }
+        #response-area { margin-bottom: 20px; }
+        #response-area h3 { margin-top: 0; }
+        #result-output { 
+            width: 100%; 
+            padding: 10px; 
+            border: 1px solid #ddd; 
+            border-radius: 4px; 
+            background-color: #fff; 
+            min-height: 100px; 
+            white-space: pre-wrap; /* Preserve whitespace and newlines */
+            box-sizing: border-box;
+        }
+        #chain-log-container { }
+        #chain-log-container h3 { margin-top: 0; }
+        #chain-log {
+            width: 100%;
+            height: 300px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            background-color: #e9e9e9;
+            font-family: monospace;
+            font-size: 0.9em;
+            white-space: pre-wrap; /* Preserve whitespace and newlines */
+            overflow-y: auto; /* Add scroll for long logs */
+            box-sizing: border-box;
+        }
+    </style>
+</head>
+<body>
+    <h1>OmniCard-AI Interface</h1>
+
+    <div id="prompt-container">
+        <label for="prompt-input">Enter Prompt:</label>
+        <input type="text" id="prompt-input" placeholder="Enter your prompt here...">
+        <button id="submit-prompt">Submit</button>
+    </div>
+
+    <div id="response-area">
+        <h3>Result:</h3>
+        <div id="result-output" aria-live="polite"></div>
+    </div>
+
+    <div id="chain-log-container">
+        <label for="chain-log">Chain Log (Real-time):</label>
+        <textarea id="chain-log" readonly aria-label="Chain Log Real-time"></textarea>
+    </div>
+
+    <script>
+        const promptInput = document.getElementById('prompt-input');
+        const submitButton = document.getElementById('submit-prompt');
+        const resultOutput = document.getElementById('result-output');
+        const chainLog = document.getElementById('chain-log');
+        const authToken = "omnicard-secret-key"; // WARNING: Hardcoding tokens is insecure for production.
+
+        // WebSocket connection for logs
+        const logSocketUrl = "ws://localhost:8000/ws/logs";
+        let logSocket;
+
+        function connectWebSocket() {
+            logSocket = new WebSocket(logSocketUrl);
+
+            logSocket.onopen = (event) => {
+                console.log("WebSocket for logs connected");
+                chainLog.value += "[System] WebSocket connected to log server.\n";
+            };
+
+            logSocket.onmessage = (event) => {
+                console.log("Received log: ", event.data);
+                chainLog.value += `${event.data}\n`; // Append new log data
+                chainLog.scrollTop = chainLog.scrollHeight; // Scroll to bottom
+            };
+
+            logSocket.onclose = (event) => {
+                console.log("WebSocket for logs disconnected. Attempting to reconnect...");
+                chainLog.value += "[System] WebSocket disconnected. Attempting to reconnect in 3s...\n";
+                setTimeout(connectWebSocket, 3000);
+            };
+
+            logSocket.onerror = (error) => {
+                console.error("WebSocket Error: ", error);
+                let errorMessage = 'Unknown error';
+                if (error instanceof Event && error.message) {
+                    errorMessage = error.message;
+                }
+                chainLog.value += `[System] WebSocket error: ${errorMessage}. Please check the server.\n`;
+            };
+        }
+        
+        connectWebSocket();
+
+        submitButton.addEventListener('click', async () => {
+            const prompt = promptInput.value;
+            if (!prompt) {
+                alert('Please enter a prompt.');
+                return;
+            }
+
+            resultOutput.textContent = 'Processing...';
+            chainLog.value += `[Request] Sending prompt: ${prompt}\n`;
+
+            try {
+                const response = await fetch('/run_graph', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${authToken}`
+                    },
+                    body: JSON.stringify({ prompt: prompt })
+                });
+
+                if (!response.ok) {
+                    let errorDetail = response.statusText;
+                    try {
+                        const errorData = await response.json();
+                        errorDetail = errorData.detail || response.statusText;
+                    } catch (e) { /* Ignore if response is not JSON */ }
+                    throw new Error(`HTTP error! Status: ${response.status}. Message: ${errorDetail}`);
+                }
+
+                const data = await response.json();
+                resultOutput.textContent = data.result;
+
+            } catch (error) {
+                console.error('Error submitting prompt:', error);
+                resultOutput.textContent = `Error: ${error.message}`;
+                chainLog.value += `[Error] Failed to process prompt: ${error.message}\n`;
+            }
+        });
+    </script>
+</body>
+</html> 

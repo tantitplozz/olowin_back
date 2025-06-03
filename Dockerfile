@@ -1,4 +1,4 @@
-FROM python:3.10-slim
+FROM python:3.11-slim
 
 WORKDIR /app
 
@@ -14,25 +14,23 @@ RUN apt-get update && apt-get install -y \
     git \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy requirements first for better Docker layer caching
-COPY requirements.txt .
-# --no-cache-dir reduces image size
-# Consider using a virtual environment inside Docker for better isolation, though not strictly necessary for all cases
-RUN pip install --no-cache-dir -r requirements.txt
-
-# Copy the rest of the application code into the WORKDIR
+# Copy the current directory contents into the container at /app
+# This includes requirements.txt, ui_server.py, and all module folders (auth, agents, etc.)
 COPY . .
+
+# Install any needed packages specified in requirements.txt
+# Using --no-cache-dir to reduce image size
+RUN pip install --no-cache-dir -r requirements.txt
 
 # Create necessary directories that the application might expect
 # Example: for ChromaDB persistent storage if used locally within the container (not recommended for production)
 RUN mkdir -p /app/data/chromadb
 
-# Expose the port the app runs on (as defined in main.py and api/server.py)
+# Make port 8000 available to the world outside this container
 EXPOSE 8000
 
-# Define environment variable for the API Key if needed directly by the app
-# ENV API_KEY="your-secret-api-key-from-dockerfile" # Better to set this in docker-compose.yml
+# Define environment variables (though these are better set in docker-compose.yml or by the orchestrator)
+# ENV NAME World
 
-# Command to run the application using main.py in API mode
-# This assumes main.py is configured to start the FastAPI server in API mode
-CMD ["python", "main.py", "--mode", "api"] 
+# Run ui_server.py when the container launches
+CMD ["uvicorn", "ui_server:app", "--host", "0.0.0.0", "--port", "8000"] 

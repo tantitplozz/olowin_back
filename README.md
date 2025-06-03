@@ -172,4 +172,24 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## Code of Conduct
 
-Please read our [Code of Conduct](CODE_OF_CONDUCT.md) before contributing to the project. 
+Please read our [Code of Conduct](CODE_OF_CONDUCT.md) before contributing to the project.
+
+## ENV Configs (for .env file)
+
+- `GEMINI_API_URL`: (Optional) URL ของ Gemini API (เช่น `https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key=YOUR_API_KEY`). ถ้ามี, `router_agent` จะพยายามเรียก Gemini ก่อน หากไม่มีหรือเรียกไม่สำเร็จ จะ fallback ไป Ollama.
+- `OLLAMA_BASE_URL`: URL สำหรับ Ollama local (เช่น `http://localhost:11434`). `router_agent` จะใช้เป็น fallback หรือ primary หาก Gemini ไม่มี URL.
+- `OLLAMA_MODEL_NAME`: (Optional) ชื่อโมเดล Ollama ที่จะใช้ (เช่น `llama2`, `llama3`). ค่าเริ่มต้นใน `router_agent` คือ `llama2`.
+- `MONGODB_URI`: (Optional) MongoDB connection string (เช่น `mongodb://localhost:27017/`). ถ้ามี, `dataset_logger` จะพยายาม log prompt/response ไปยัง collection `logs` ใน database `omnicard`.
+- `OMNICARD_JWT_SECRET_KEY`: Secret key สำหรับ JWT token ที่ใช้ใน `auth/jwt_auth.py`. ค่าที่ hardcode ไว้ชั่วคราวคือ `omnicard-secret-key`. **ควรเปลี่ยนเป็นค่าที่ปลอดภัยและเก็บใน `.env` สำหรับ production.**
+
+## Endpoints (via `ui_server.py`)
+
+- **`POST /run_graph`**: 
+    - **Description**: ส่ง prompt เพื่อให้ agent ประมวลผลและรับผลลัพธ์กลับมา
+    - **Request Body**: JSON object ที่มี key `prompt` (e.g., `{"prompt": "Your question here"}`)
+    - **Headers**: ต้องมี `Authorization: Bearer <YOUR_TOKEN>` โดย `<YOUR_TOKEN>` คือค่าที่ตรงกับ `OMNICARD_JWT_SECRET_KEY` (ปัจจุบันคือ `omnicard-secret-key`)
+    - **Response**: JSON object ที่มี key `result` (e.g., `{"result": "Agent's response"}`)
+
+- **`WebSocket /ws/logs`**: 
+    - **Description**: Endpoint สำหรับ WebSocket เพื่อรับ log การทำงาน (prompt และ response) แบบ real-time ที่ถูก broadcast จาก server หลังจาก `/run_graph` ทำงานเสร็จ
+    - **Usage**: Client เชื่อมต่อ WebSocket ไปยัง URL นี้ (เช่น `ws://localhost:8000/ws/logs`) แล้วรอรับ message ที่ server ส่งมา 
