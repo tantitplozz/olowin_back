@@ -1,20 +1,18 @@
 # Use an official Nginx runtime as a parent image
 FROM nginx:alpine
 
-# Set working directory to Nginx public folder
-WORKDIR /usr/share/nginx/html
+# Set working directory (though Nginx serves from /usr/share/nginx/html by default)
+# WORKDIR /app 
 
-# Remove default Nginx static assets
-RUN rm -rf .
+# Copy the main HTML file
+COPY ./index.html /usr/share/nginx/html/index.html
 
-# Copy static assets from an assumed 'public' or root of the context (which is ./frontend)
-# If your index.html and any other assets (CSS, JS) are directly in ./frontend, this is fine.
-# If they are in a subfolder like ./frontend/public or ./frontend/dist, adjust the COPY source path.
-COPY ./index.html .
-# If you have other static assets like CSS or JS folders, copy them too:
-# COPY ./css ./css
-# COPY ./js ./js
-# COPY ./images ./images
+# Copy static assets from the ./static subfolder in the build context (frontend/static)
+COPY ./static /usr/share/nginx/html/static/
+
+# (Optional) Copy a custom Nginx configuration if needed
+# For example, to inject environment variables into JS/HTML or set caching headers.
+# COPY nginx.conf /etc/nginx/conf.d/default.conf
 
 # Expose port 80 (Nginx default HTTP port)
 EXPOSE 80
